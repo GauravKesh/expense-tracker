@@ -1,8 +1,9 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Category from '@/models/Category';
 
-export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
