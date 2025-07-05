@@ -111,8 +111,8 @@ app/
 
 # 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/finance-tracker.git
-cd finance-tracker
+git clone https://github.com/GauravKesh/expense-tracker.git
+cd expense-tracker
 ```
 
 # 2. Install dependencies
