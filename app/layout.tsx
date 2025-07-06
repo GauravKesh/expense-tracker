@@ -2,6 +2,7 @@ import Navbar from "@/components/layout/Navbar";
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import RenderInfoPopup from "@/components/layout/RenderInfoPopup";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,7 +19,10 @@ export default function RootLayout({
   return (
     <html lang="en">
     
-      <body className={inter.className}>  <Navbar />{children}</body>
+      <body className={inter.className}>  
+        <Navbar />
+        <RenderInfoPopup/>
+        {children}</body>
     </html>
   );
 }
