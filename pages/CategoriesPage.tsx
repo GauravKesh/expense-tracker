@@ -39,7 +39,7 @@ export default function CategoriesPage() {
 
   return (
     <div className="p-4">
-      <CategoriesModule categories={categories} />
+      <CategoriesModule/>
     </div>
   );
 }

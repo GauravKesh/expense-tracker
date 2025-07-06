@@ -53,7 +53,7 @@ export default function TransactionsPage() {
 
   return (
     <div className="p-4">
-      <TransactionsModule transactions={transactions} categories={categories} />
+      <TransactionsModule categories={categories} />
     </div>
   );
 }
