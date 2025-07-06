@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
+import baseUrl from "@/lib/piendpoint";
 
 interface Category {
   _id: string;
@@ -28,7 +29,7 @@ export default function CategoriesModule() {
   const [error, setError] = useState<string | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editName, setEditName] = useState<string>("");
-  const BASE_URL = "https://personal-expense-backend.onrender.com/api";
+const BASE_URL = baseUrl;
 
   const fetchCategories = async () => {
     try {

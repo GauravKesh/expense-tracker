@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import {
   Dialog,
   DialogContent,
@@ -53,7 +53,7 @@ export default function EditBudgetModal({
               min={0}
             />
           </div>
-          
+
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel

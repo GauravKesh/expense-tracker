@@ -26,6 +26,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Loaderui } from "@/components/ui/loaderui";
 import axios from "axios";
+import baseUrl from "@/lib/piendpoint";
 
 interface Transaction {
   _id: string;
@@ -55,14 +56,15 @@ export default function TransactionsModule({ categories }: Props) {
   const [showDialog, setShowDialog] = useState(false);
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
-  const BASE_URL = "https://personal-expense-backend.onrender.com/api";
+  // const BASE_URL = "https://personal-expense-backend.onrender.com/api";
+  const BASE_URL = baseUrl;
 
   const [editData, setEditData] = useState({
     amount: "",
     description: "",
     category: "",
     date: "",
-    type: "expense" as "income" | "expense",
+    type: "",
   });
 
   const fetchTransactions = async () => {
@@ -206,85 +208,108 @@ export default function TransactionsModule({ categories }: Props) {
                   </div>
                 ))}
               </div>
-
-              <Dialog
-                open={showDialog}
-                onOpenChange={(v) => {
-                  setShowDialog(v);
-                  if (!v) setEditingTransaction(null);
-                }}
-              >
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Edit Transaction</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Amount</Label>
-                      <Input
-                        type="number"
-                        value={editData.amount}
-                        onChange={(e) =>
-                          setEditData({ ...editData, amount: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label>Description</Label>
-                      <Input
-                        value={editData.description}
-                        onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            description: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label>Date</Label>
-                      <Input
-                        type="date"
-                        value={editData.date}
-                        onChange={(e) =>
-                          setEditData({ ...editData, date: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label>Category</Label>
-                      <Select
-                        value={editData.category}
-                        onValueChange={(value) =>
-                          setEditData({ ...editData, category: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((cat) => (
-                            <SelectItem key={cat._id} value={cat._id}>
-                              {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowDialog(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button onClick={updateTransaction}>Save</Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
             </CardContent>
           </Card>
+
+          <Dialog
+            open={showDialog}
+            onOpenChange={(v) => {
+              setShowDialog(v);
+              if (!v) setEditingTransaction(null);
+            }}
+          >
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Edit Transaction</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Amount</Label>
+                  <Input
+                    type="number"
+                    value={editData.amount}
+                    onChange={(e) =>
+                      setEditData({ ...editData, amount: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Description</Label>
+                  <Input
+                    value={editData.description}
+                    onChange={(e) =>
+                      setEditData({
+                        ...editData,
+                        description: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Date</Label>
+                  <Input
+                    type="date"
+                    value={editData.date}
+                    onChange={(e) =>
+                      setEditData({ ...editData, date: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label>Type</Label>
+                  <div className="flex space-x-2 mt-1">
+                    {(["income", "expense"] as const).map((typeOption) => (
+                      <Button
+                        key={typeOption}
+                        type="button"
+                        variant={
+                          editData.type === typeOption ? "default" : "outline"
+                        }
+                        onClick={() =>
+                          setEditData({ ...editData, type: typeOption })
+                        }
+                      >
+                        {typeOption.charAt(0).toUpperCase() +
+                          typeOption.slice(1)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Category</Label>
+                  <Select
+                    value={editData.category}
+                    onValueChange={(value) =>
+                      setEditData({ ...editData, category: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat._id} value={cat._id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={updateTransaction}>Save</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           <Dialogs.Root
             open={showTransactionForm}

@@ -3,7 +3,8 @@
 import TransactionsModule from '@/components/modules/TransactionsModule';
 import { Loaderui } from '@/components/ui/loaderui';
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from "axios";
+import baseUrl from "@/lib/piendpoint";
 
 interface Category {
   _id: string;
@@ -19,7 +20,8 @@ interface Transaction {
   category: Category;
 }
 
-const BASE_URL = 'https://personal-expense-backend.onrender.com/api';
+const BASE_URL = baseUrl
+
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);

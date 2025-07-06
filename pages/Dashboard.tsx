@@ -11,9 +11,10 @@ import BudgetChart from "@/components/charts/BudgetChart";
 import { TrendingUp, TrendingDown, Target, Plus, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import axios from "axios";
+import baseUrl from "@/lib/piendpoint";
 import TransactionForm from "@/components/forms/TransactionForm";
 
-const BASE_URL = "https://personal-expense-backend.onrender.com/api";
+const BASE_URL = baseUrl;
 
 interface CategoryType {
   _id: string;

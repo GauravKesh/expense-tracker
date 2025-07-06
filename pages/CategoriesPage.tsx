@@ -3,14 +3,16 @@
 import CategoriesModule from '@/components/modules/CategoriesModule';
 import { Loaderui } from '@/components/ui/loaderui';
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from "axios";
+import baseUrl from "@/lib/piendpoint";
 
 interface Category {
   _id: string;
   name: string;
 }
 
-const BASE_URL = 'https://personal-expense-backend.onrender.com/api';
+const BASE_URL = baseUrl
+
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);

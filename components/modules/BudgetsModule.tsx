@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import axios from "axios";
+import baseUrl from "@/lib/piendpoint";
 
 interface Category {
   _id: string;
@@ -50,7 +51,7 @@ export default function BudgetsModule({ categories, transactions }: Props) {
   const [editBudget, setEditBudget] = useState<Budget | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
-  const BASE_URL = "https://personal-expense-backend.onrender.com/api";
+const BASE_URL = baseUrl;
 
   const fetchBudgets = async () => {
     try {
