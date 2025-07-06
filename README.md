@@ -18,7 +18,7 @@ A modern, full-stack finance dashboard built with Next.js, Tailwind CSS, and Typ
 - **State Management**: useState, useEffect
 - **Icons**: Lucide
 - **Charts**: Recharts
-- **API**: RESTful API (Next.js API routes)
+- **API**: RESTful API (Nodejs API routes)
 - **Database**: MongoDB
 
 ## 📁 Folder Structure
@@ -26,21 +26,9 @@ A modern, full-stack finance dashboard built with Next.js, Tailwind CSS, and Typ
 app/
 .
 ├── app
-│   ├── api
-│   │   ├── budgets
-│   │   │   ├── [id]
-│   │   │   │   └── route.ts
-│   │   │   └── route.ts
-│   │   ├── categories
-│   │   │   ├── [id]
-│   │   │   │   └── route.ts
-│   │   │   └── route.ts
-│   │   └── transactions
-│   │       ├── [id]
-│   │       │   └── route.ts
-│   │       └── route.ts
 │   ├── dashboard
 │   │   └── page.tsx
+│   ├── favicon.ico
 │   ├── globals.css
 │   ├── layout.tsx
 │   ├── page.tsx
@@ -83,12 +71,7 @@ app/
 │       └── textarea.tsx
 ├── components.json
 ├── lib
-│   ├── mongodb.ts
 │   └── utils.ts
-├── models
-│   ├── Budget.ts
-│   ├── Category.ts
-│   └── Transaction.ts
 ├── next-env.d.ts
 ├── next.config.js
 ├── package-lock.json
@@ -99,10 +82,11 @@ app/
 │   ├── Dashboard.tsx
 │   └── TransactionsPage.tsx
 ├── postcss.config.js
+├── README.md
 ├── tailwind.config.ts
 └── tsconfig.json
 
-24 directories, 53 files
+
 ```
 
 
@@ -120,16 +104,18 @@ cd expense-tracker
 npm install
 ```
 # 3. Start development server
-🌐 Environment Variables
-Create a .env.local file:
-add:- 
-``` bash 
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/finance
+```bash
+npm run dev
 ```
 
-```bash
+### Backend is hosted on RENDER
+- backend repository
 
-npm run dev
+[Backend Repository](https://github.com/GauravKesh/personal-expense-backend)
+``` bash 
+
+https://personal-expense-backend.onrender.com
+
 ```
 ## 🧪 API Endpoints
 
