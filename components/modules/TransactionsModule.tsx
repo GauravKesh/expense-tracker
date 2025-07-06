@@ -65,52 +65,52 @@ export default function TransactionsModule({ categories }: Props) {
     type: "expense" as "income" | "expense",
   });
 
- const fetchTransactions = async () => {
-  try {
-    setLoading(true);
-    const { data } = await axios.get(`${BASE_URL}/transactions`);
-    setTransactions(Array.isArray(data) ? data : []);
-  } catch (e) {
-    console.error("Error fetching transactions:", e);
-    setTransactions([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axios.get(`${BASE_URL}/transactions`);
+      setTransactions(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("Error fetching transactions:", e);
+      setTransactions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const addTransaction = async (transaction: any) => {
-  try {
-    await axios.post(`${BASE_URL}/transactions`, transaction);
-    setShowTransactionForm(false);
-    fetchTransactions();
-  } catch (error) {
-    console.error("Error adding transaction:", error);
-  }
-};
+  const addTransaction = async (transaction: any) => {
+    try {
+      await axios.post(`${BASE_URL}/transactions`, transaction);
+      setShowTransactionForm(false);
+      fetchTransactions();
+    } catch (error) {
+      console.error("Error adding transaction:", error);
+    }
+  };
 
-const updateTransaction = async () => {
-  if (!editingTransaction) return;
-  try {
-    await axios.put(`${BASE_URL}/transactions/${editingTransaction._id}`, {
-      ...editData,
-      amount: parseFloat(editData.amount),
-    });
-    fetchTransactions();
-    setShowDialog(false);
-    setEditingTransaction(null);
-  } catch (e) {
-    console.error("Error updating transaction:", e);
-  }
-};
+  const updateTransaction = async () => {
+    if (!editingTransaction) return;
+    try {
+      await axios.put(`${BASE_URL}/transactions/${editingTransaction._id}`, {
+        ...editData,
+        amount: parseFloat(editData.amount),
+      });
+      fetchTransactions();
+      setShowDialog(false);
+      setEditingTransaction(null);
+    } catch (e) {
+      console.error("Error updating transaction:", e);
+    }
+  };
 
-const deleteTransaction = async (id: string) => {
-  try {
-    await axios.delete(`${BASE_URL}/transactions/${id}`);
-    fetchTransactions();
-  } catch (e) {
-    console.error("Error deleting transaction:", e);
-  }
-};
+  const deleteTransaction = async (id: string) => {
+    try {
+      await axios.delete(`${BASE_URL}/transactions/${id}`);
+      fetchTransactions();
+    } catch (e) {
+      console.error("Error deleting transaction:", e);
+    }
+  };
 
   useEffect(() => {
     fetchTransactions();
@@ -178,9 +178,13 @@ const deleteTransaction = async (id: string) => {
                         variant={
                           t.type === "income" ? "default" : "destructive"
                         }
+                        className={
+                          t.type === "income" ? "bg-blue-500 text-white" : ""
+                        }
                       >
                         {t.type === "income" ? "+" : "-"}₹{t.amount.toFixed(2)}
                       </Badge>
+
                       <Button
                         variant="ghost"
                         size="sm"
