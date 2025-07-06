@@ -19,7 +19,7 @@ export default function SummaryCard({ title, amount, icon: Icon, trend }: Summar
         <Icon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">${amount.toFixed(2)}</div>
+        <div className="text-2xl font-bold">₹{amount.toFixed(2)}</div>
         {trend && (
           <p className={`text-xs ${trend.isPositive ? "text-green-600" : "text-red-600"}`}>
             {trend.isPositive ? "+" : ""}

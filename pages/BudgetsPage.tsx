@@ -1,7 +1,9 @@
-"use client"
+"use client";
+
 import BudgetsModule from '@/components/modules/BudgetsModule';
 import { Loaderui } from '@/components/ui/loaderui';
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface Category {
   _id: string;
@@ -17,6 +19,8 @@ interface Transaction {
   };
 }
 
+const BASE_URL = 'https://personal-expense-backend.onrender.com/api';
+
 export default function BudgetsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -27,15 +31,12 @@ export default function BudgetsPage() {
       try {
         setLoading(true);
         const [catRes, transRes] = await Promise.all([
-          fetch('/api/categories'),
-          fetch('/api/transactions'),
+          axios.get(`${BASE_URL}/categories`),
+          axios.get(`${BASE_URL}/transactions`),
         ]);
 
-        const catData = await catRes.json();
-        const transData = await transRes.json();
-
-        setCategories(Array.isArray(catData) ? catData : []);
-        setTransactions(Array.isArray(transData) ? transData : []);
+        setCategories(Array.isArray(catRes.data) ? catRes.data : []);
+        setTransactions(Array.isArray(transRes.data) ? transRes.data : []);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -46,7 +47,7 @@ export default function BudgetsPage() {
     fetchData();
   }, []);
 
-  if (loading) return <p><Loaderui text={""}/></p>;
+  if (loading) return <p><Loaderui text="" /></p>;
 
   return (
     <div className="p-4">

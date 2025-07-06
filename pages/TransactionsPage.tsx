@@ -1,7 +1,9 @@
-"use client"
+"use client";
+
 import TransactionsModule from '@/components/modules/TransactionsModule';
 import { Loaderui } from '@/components/ui/loaderui';
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface Category {
   _id: string;
@@ -17,6 +19,8 @@ interface Transaction {
   category: Category;
 }
 
+const BASE_URL = 'https://personal-expense-backend.onrender.com/api';
+
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -27,15 +31,12 @@ export default function TransactionsPage() {
       try {
         setLoading(true);
         const [transRes, catRes] = await Promise.all([
-          fetch('/api/transactions'),
-          fetch('/api/categories'),
+          axios.get(`${BASE_URL}/transactions`),
+          axios.get(`${BASE_URL}/categories`),
         ]);
 
-        const transData = await transRes.json();
-        const catData = await catRes.json();
-
-        setTransactions(Array.isArray(transData) ? transData : []);
-        setCategories(Array.isArray(catData) ? catData : []);
+        setTransactions(Array.isArray(transRes.data) ? transRes.data : []);
+        setCategories(Array.isArray(catRes.data) ? catRes.data : []);
       } catch (error) {
         console.error('Error loading transactions:', error);
         setTransactions([]);
@@ -48,11 +49,11 @@ export default function TransactionsPage() {
     fetchData();
   }, []);
 
-  if (loading) return <p><Loaderui text={""}/></p>;
+  if (loading) return <p><Loaderui text="Loading transactions..." /></p>;
 
   return (
     <div className="p-4">
-      <TransactionsModule  categories={categories} />
+      <TransactionsModule transactions={transactions} categories={categories} />
     </div>
   );
 }

@@ -8,9 +8,12 @@ import SummaryCard from "@/components/cards/SummaryCard";
 import MonthlyChart from "@/components/charts/MonthlyChart";
 import CategoryChart from "@/components/charts/CategoryChart";
 import BudgetChart from "@/components/charts/BudgetChart";
-import { TrendingUp, TrendingDown, Target, Settings, Plus } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, Plus, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import axios from "axios";
+import TransactionForm from "@/components/forms/TransactionForm";
+
+const BASE_URL = "https://personal-expense-backend.onrender.com/api";
 
 interface CategoryType {
   _id: string;
@@ -19,10 +22,7 @@ interface CategoryType {
 
 interface BudgetType {
   _id: string;
-  category: {
-    _id: string;
-    name: string;
-  };
+  category: { _id: string; name: string };
   amount: number;
   month: number;
   year: number;
@@ -33,44 +33,30 @@ interface TransactionType {
   _id: string;
   amount: number;
   type: "income" | "expense";
-  category: {
-    _id: string;
-    name: string;
-  };
+  category: { _id: string; name: string };
   date: string;
 }
-
-
-import TransactionForm from "@/components/forms/TransactionForm";
 
 export default function Dashboard() {
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [budgets, setBudgets] = useState<BudgetType[]>([]);
-
   const [loading, setLoading] = useState(true);
-
   const [showTransactionForm, setShowTransactionForm] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [transactionsRes, categoriesRes, budgetsRes] = await Promise.all([
-          fetch("/api/transactions"),
-          fetch("/api/categories"),
-          fetch("/api/budgets"),
+        const [transRes, catRes, budRes] = await Promise.all([
+          axios.get(`${BASE_URL}/transactions`),
+          axios.get(`${BASE_URL}/categories`),
+          axios.get(`${BASE_URL}/budgets`)
         ]);
 
-        const transactionsData = await transactionsRes.json();
-        const categoriesData = await categoriesRes.json();
-        const budgetsData = await budgetsRes.json();
-
-        setTransactions(
-          Array.isArray(transactionsData) ? transactionsData : []
-        );
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-        setBudgets(Array.isArray(budgetsData) ? budgetsData : []);
+        setTransactions(transRes.data || []);
+        setCategories(catRes.data || []);
+        setBudgets(budRes.data || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -83,18 +69,10 @@ export default function Dashboard() {
 
   const addTransaction = async (transaction: any) => {
     try {
-      const response = await fetch("/api/transactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(transaction),
-      });
-
-      if (response.ok) {
-        setShowTransactionForm(false);
-        const updated = await fetch("/api/transactions");
-        const updatedData = await updated.json();
-        setTransactions(updatedData);
-      }
+      await axios.post(`${BASE_URL}/transactions`, transaction);
+      setShowTransactionForm(false);
+      const res = await axios.get(`${BASE_URL}/transactions`);
+      setTransactions(res.data || []);
     } catch (error) {
       console.error("Error adding transaction:", error);
     }
@@ -103,63 +81,54 @@ export default function Dashboard() {
   const totalIncome = transactions
     .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
+
   const totalExpenses = transactions
     .filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + t?.amount, 0);
+    .reduce((sum, t) => sum + t.amount, 0);
+
   const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
 
   const monthlyData = (() => {
     const data: Record<string, { income: number; expense: number }> = {};
-
     transactions.forEach((t) => {
-      const month = new Date(t.date).toLocaleString("default", {
-        month: "short",
-      });
-
+      const month = new Date(t.date).toLocaleString("default", { month: "short" });
       if (!data[month]) data[month] = { income: 0, expense: 0 };
       data[month][t.type] += t.amount;
     });
-
-    return Object.entries(data).map(([month, values]) => ({
-      month,
-      ...values,
-    }));
+    return Object.entries(data).map(([month, values]) => ({ month, ...values }));
   })();
 
-const categoryData = (() => {
-  const data: Record<string, number> = {};
-
-  transactions
-    .filter((t) => t.type === "expense")
-    .forEach((t) => {
-      const categoryObj = categories.find((c) => c._id === t.category._id);
-      const name = categoryObj?.name || "Uncategorized";
-      data[name] = (data[name] || 0) + t.amount;
-    });
-
-  return Object.entries(data).map(([name, value]) => ({ name, value }));
-})();
-
+  const categoryData = (() => {
+    const data: Record<string, number> = {};
+    transactions
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        const category = categories.find((c) => c._id === t.category._id);
+        const name = category?.name || "Uncategorized";
+        data[name] = (data[name] || 0) + t.amount;
+      });
+    return Object.entries(data).map(([name, value]) => ({ name, value }));
+  })();
 
   const budgetData = budgets.map((budget) => {
     const spent = transactions
-      .filter(
-        (t) => t.type === "expense" && t.category?._id === budget.category?._id
-      )
+      .filter((t) => t.type === "expense" && t.category?._id === budget.category?._id)
       .reduce((sum, t) => sum + t.amount, 0);
     return {
-      category: budget?.category?.name,
-      budgeted: budget?.amount,
-      spent,
+      category: budget.category.name,
+      budgeted: budget.amount,
+      spent
     };
   });
+
   const recentTransactions = [...transactions]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 10);
+
   if (loading) {
     return (
       <div className="min-h-screen">
-        <Loaderui text="loading dashboard..." />
+        <Loaderui text="Loading dashboard..." />
       </div>
     );
   }
@@ -168,21 +137,13 @@ const categoryData = (() => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowTransactionForm(true)}
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Add Transaction
-            </Button>
-          </div>
+          <Button variant="outline" onClick={() => setShowTransactionForm(true)}>
+            <Plus className="h-5 w-5 mr-2" />
+            Add Transaction
+          </Button>
         </div>
 
-        <Dialog.Root
-          open={showTransactionForm}
-          onOpenChange={setShowTransactionForm}
-        >
+        <Dialog.Root open={showTransactionForm} onOpenChange={setShowTransactionForm}>
           <Dialog.Portal>
             <Dialog.Overlay className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" />
             <Dialog.Content className="fixed z-50 top-1/2 left-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 shadow-xl">
@@ -213,12 +174,9 @@ const categoryData = (() => {
             trend={{
               value:
                 totalIncome > 0
-                  ? +(
-                      ((totalIncome - totalExpenses) / totalIncome) *
-                      100
-                    ).toFixed(1)
+                  ? +(((totalIncome - totalExpenses) / totalIncome) * 100).toFixed(1)
                   : 0,
-              isPositive: true,
+              isPositive: true
             }}
           />
           <SummaryCard
@@ -230,7 +188,7 @@ const categoryData = (() => {
                 totalIncome > 0
                   ? -((totalExpenses / totalIncome) * 100).toFixed(1)
                   : 0,
-              isPositive: false,
+              isPositive: false
             }}
           />
           <SummaryCard
@@ -240,12 +198,9 @@ const categoryData = (() => {
             trend={{
               value:
                 totalBudget > 0
-                  ? +(
-                      ((totalBudget - totalExpenses) / totalBudget) *
-                      100
-                    ).toFixed(1)
+                  ? +(((totalBudget - totalExpenses) / totalBudget) * 100).toFixed(1)
                   : 0,
-              isPositive: totalBudget - totalExpenses >= 0,
+              isPositive: totalBudget - totalExpenses >= 0
             }}
           />
         </div>
@@ -277,6 +232,7 @@ const categoryData = (() => {
             <BudgetChart data={budgetData} />
           </CardContent>
         </Card>
+
         <Card className="mt-8">
           <CardHeader>
             <CardTitle>Recent Transactions</CardTitle>
@@ -308,7 +264,7 @@ const categoryData = (() => {
                         txn.type === "income" ? "text-blue-600" : "text-red-600"
                       }`}
                     >
-                      {txn.type === "income" ? "+" : "-"}$
+                      {txn.type === "income" ? "+" : "-"}₹
                       {txn.amount.toFixed(2)}
                     </p>
                   </div>

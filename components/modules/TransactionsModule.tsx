@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Loaderui } from "@/components/ui/loaderui";
+import axios from "axios";
 
 interface Transaction {
   _id: string;
@@ -54,6 +55,7 @@ export default function TransactionsModule({ categories }: Props) {
   const [showDialog, setShowDialog] = useState(false);
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
+  const BASE_URL = "https://personal-expense-backend.onrender.com/api";
 
   const [editData, setEditData] = useState({
     amount: "",
@@ -63,68 +65,53 @@ export default function TransactionsModule({ categories }: Props) {
     type: "expense" as "income" | "expense",
   });
 
-  const fetchTransactions = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/transactions");
-      const data = await res.json();
-      setTransactions(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error("Error fetching transactions:", e);
-      setTransactions([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchTransactions = async () => {
+  try {
+    setLoading(true);
+    const { data } = await axios.get(`${BASE_URL}/transactions`);
+    setTransactions(Array.isArray(data) ? data : []);
+  } catch (e) {
+    console.error("Error fetching transactions:", e);
+    setTransactions([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const updateTransaction = async () => {
-    if (!editingTransaction) return;
-    try {
-      const res = await fetch(`/api/transactions/${editingTransaction._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...editData,
-          amount: parseFloat(editData.amount),
-        }),
-      });
-      if (res.ok) {
-        fetchTransactions();
-        setShowDialog(false);
-        setEditingTransaction(null);
-      }
-    } catch (e) {
-      console.error("Error updating transaction:", e);
-    }
-  };
+const addTransaction = async (transaction: any) => {
+  try {
+    await axios.post(`${BASE_URL}/transactions`, transaction);
+    setShowTransactionForm(false);
+    fetchTransactions();
+  } catch (error) {
+    console.error("Error adding transaction:", error);
+  }
+};
 
-  const deleteTransaction = async (id: string) => {
-    try {
-      const res = await fetch(`/api/transactions/${id}`, { method: "DELETE" });
-      if (res.ok) fetchTransactions();
-    } catch (e) {
-      console.error("Error deleting transaction:", e);
-    }
-  };
+const updateTransaction = async () => {
+  if (!editingTransaction) return;
+  try {
+    await axios.put(`${BASE_URL}/transactions/${editingTransaction._id}`, {
+      ...editData,
+      amount: parseFloat(editData.amount),
+    });
+    fetchTransactions();
+    setShowDialog(false);
+    setEditingTransaction(null);
+  } catch (e) {
+    console.error("Error updating transaction:", e);
+  }
+};
 
-  const addTransaction = async (transaction: any) => {
-    try {
-      const response = await fetch("/api/transactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(transaction),
-      });
+const deleteTransaction = async (id: string) => {
+  try {
+    await axios.delete(`${BASE_URL}/transactions/${id}`);
+    fetchTransactions();
+  } catch (e) {
+    console.error("Error deleting transaction:", e);
+  }
+};
 
-      if (response.ok) {
-        setShowTransactionForm(false);
-        const updated = await fetch("/api/transactions");
-        const updatedData = await updated.json();
-        setTransactions(updatedData);
-      }
-    } catch (error) {
-      console.error("Error adding transaction:", error);
-    }
-  };
   useEffect(() => {
     fetchTransactions();
   }, []);
@@ -192,7 +179,7 @@ export default function TransactionsModule({ categories }: Props) {
                           t.type === "income" ? "default" : "destructive"
                         }
                       >
-                        {t.type === "income" ? "+" : "-"}${t.amount.toFixed(2)}
+                        {t.type === "income" ? "+" : "-"}₹{t.amount.toFixed(2)}
                       </Badge>
                       <Button
                         variant="ghost"

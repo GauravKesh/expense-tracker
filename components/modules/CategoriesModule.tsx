@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Plus, Pencil } from "lucide-react";
 import CategoryForm from "@/components/forms/CategoryForm";
 import { Loaderui } from "@/components/ui/loaderui";
+
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import axios from "axios";
 
 interface Category {
   _id: string;
@@ -26,15 +28,14 @@ export default function CategoriesModule() {
   const [error, setError] = useState<string | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editName, setEditName] = useState<string>("");
+  const BASE_URL = "https://personal-expense-backend.onrender.com/api";
 
   const fetchCategories = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("/api/categories");
-      if (!res.ok) throw new Error("Failed to fetch categories");
-      const data = await res.json();
-      setCategories(Array.isArray(data) ? data : []);
+      const res = await axios.get(`${BASE_URL}/categories`);
+      setCategories(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
       console.error("Error fetching categories:", e);
       setError("Failed to load categories. Please try again later.");
@@ -44,15 +45,10 @@ export default function CategoriesModule() {
     }
   };
 
-  const addCategory = async (category: any) => {
+  const addCategory = async (category: { name: string }) => {
     try {
       setError(null);
-      const res = await fetch("/api/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(category),
-      });
-      if (!res.ok) throw new Error("Failed to add category");
+      await axios.post(`${BASE_URL}/categories`, category);
       fetchCategories();
       setShowForm(false);
     } catch (e) {
@@ -63,12 +59,7 @@ export default function CategoriesModule() {
 
   const updateCategory = async (id: string, name: string) => {
     try {
-      const res = await fetch(`/api/categories/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-      });
-      if (!res.ok) throw new Error("Failed to update category");
+      await axios.put(`${BASE_URL}/categories/${id}`, { name });
       fetchCategories();
       setEditingCategory(null);
       setEditName("");
@@ -81,8 +72,7 @@ export default function CategoriesModule() {
   const deleteCategory = async (id: string) => {
     try {
       setError(null);
-      const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete category");
+      await axios.delete(`${BASE_URL}/categories/${id}`);
       fetchCategories();
     } catch (e) {
       console.error("Error deleting category:", e);

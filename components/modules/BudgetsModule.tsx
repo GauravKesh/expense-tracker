@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import axios from "axios";
 
 interface Category {
   _id: string;
@@ -49,13 +50,13 @@ export default function BudgetsModule({ categories, transactions }: Props) {
   const [editBudget, setEditBudget] = useState<Budget | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
+  const BASE_URL = "https://personal-expense-backend.onrender.com/api";
 
   const fetchBudgets = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/budgets");
-      const data = await res.json();
-      setBudgets(Array.isArray(data) ? data : []);
+      const res = await axios.get(`${BASE_URL}/budgets`);
+      setBudgets(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
       console.error("Error fetching budgets:", e);
       setBudgets([]);
@@ -66,19 +67,17 @@ export default function BudgetsModule({ categories, transactions }: Props) {
 
   const handleSubmit = async (budget: any) => {
     try {
-      const res = await fetch(
-        editBudget ? `/api/budgets/${editBudget._id}` : "/api/budgets",
-        {
-          method: editBudget ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(budget),
-        }
-      );
-      if (res.ok) {
-        fetchBudgets();
-        setShowForm(false);
-        setEditBudget(null);
-      }
+      const url = editBudget
+        ? `${BASE_URL}/budgets/${editBudget._id}`
+        : `${BASE_URL}/budgets`;
+
+      const method = editBudget ? "put" : "post";
+
+      await axios[method](url, budget);
+
+      fetchBudgets();
+      setShowForm(false);
+      setEditBudget(null);
     } catch (e) {
       console.error("Error submitting budget:", e);
     }
@@ -86,16 +85,10 @@ export default function BudgetsModule({ categories, transactions }: Props) {
 
   const updateBudgetAmount = async (id: string, newAmount: number) => {
     try {
-      const res = await fetch(`/api/budgets/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: newAmount }),
-      });
-      if (res.ok) {
-        fetchBudgets();
-        setShowEditModal(false);
-        setSelectedBudget(null);
-      }
+      await axios.put(`${BASE_URL}/budgets/${id}`, { amount: newAmount });
+      fetchBudgets();
+      setShowEditModal(false);
+      setSelectedBudget(null);
     } catch (e) {
       console.error("Error updating amount:", e);
     }
@@ -103,8 +96,8 @@ export default function BudgetsModule({ categories, transactions }: Props) {
 
   const deleteBudget = async (id: string) => {
     try {
-      const res = await fetch(`/api/budgets/${id}`, { method: "DELETE" });
-      if (res.ok) fetchBudgets();
+      await axios.delete(`${BASE_URL}/budgets/${id}`);
+      fetchBudgets();
     } catch (e) {
       console.error("Error deleting budget:", e);
     }
@@ -201,7 +194,7 @@ export default function BudgetsModule({ categories, transactions }: Props) {
                         <p className="text-sm text-red-600 mt-1">
                           <ul>
                             <li>
-                              Budget exceeded by $
+                              Budget exceeded by ₹
                               {(spent - budget.amount).toFixed(2)}.
                             </li>
                             <li>
@@ -217,12 +210,12 @@ export default function BudgetsModule({ categories, transactions }: Props) {
                     </div>
                     <div className="flex items-center space-x-2 mt-3 md:mt-0">
                       <Badge variant="outline">
-                        ${budget.amount.toFixed(2)}
+                        ₹{budget.amount.toFixed(2)}
                       </Badge>
                       <Badge
                         variant={isOverSpent ? "destructive" : "secondary"}
                       >
-                        Spent: ${spent.toFixed(2)}
+                        Spent: ₹{spent.toFixed(2)}
                       </Badge>
                       <Button
                         variant="ghost"
